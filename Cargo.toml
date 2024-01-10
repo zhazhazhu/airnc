@@ -2,11 +2,16 @@
 name = "airnc"
 version = "0.0.1"
 edition = "2021"
+description = "A LAN transmission tool"
+authors = ["fangyuan.leslie@gmail.com"]
+keywords = ["cli", "file-transmission", "LAN"]
+license = "MIT"
+homepage = "https://github.com/zhazhazhu/airnc"
+repository = "https://github.com/zhazhazhu/airnc"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-futures = "0.3"
 clap = { version = "4.4.13", features = ["derive"] }
 colored = "2.1.0"
 tokio = { version = "1.35.1", features = ["full"] }
@@ -15,5 +20,4 @@ rand = "0.8.5"
 qrcode = "0.13"
 image = "0.24.7"
 termimage = "1.2.1"
-lazy_static = "1.4.0"
 async-stream = "0.3.5"
