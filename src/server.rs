@@ -5,9 +5,11 @@ use crate::{
 use actix_web::{
     http::header::ContentLength,
     web::{self, Bytes},
-    App, HttpResponse, HttpServer, Responder,
+    App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 use async_stream::stream;
+use colored::*;
+use indicatif::ProgressBar;
 use std::{
     fs::File,
     io::{self, Read},
@@ -55,33 +57,51 @@ pub async fn run_server(cli: Cli) -> Result<(), std::io::Error> {
     .await
 }
 
-async fn download_handler(data: web::Data<AppState>) -> io::Result<impl Responder> {
+async fn download_handler(
+    req: HttpRequest,
+    data: web::Data<AppState>,
+) -> io::Result<impl Responder> {
+    let user_addr = req.peer_addr();
+    let mut ip = String::new();
+    if let Some(val) = user_addr {
+        ip = val.ip().to_string();
+        println!("User: {} request was initiated.", ip.to_string().green());
+    };
     let mut file = File::open(&data.file_path)?;
     let file_size = file.metadata()?.len();
     let (sender, mut receiver) = mpsc::channel::<Result<Bytes, io::Error>>(32);
 
+    let mut remaining_bytes = 8192;
+    let mut buffer = [0u8; 8192];
+    let pb = ProgressBar::new(file_size);
     let download_task = tokio::task::spawn_blocking(move || {
-        let mut buffer = [0u8; 8192];
-        let mut remaining_bytes = file_size;
-
-        while remaining_bytes > 0 {
+        while remaining_bytes < file_size {
             let bytes_to_read = buffer.len().min(remaining_bytes as usize);
             let bytes_read = file.read(&mut buffer[..bytes_to_read])?;
 
             let chunk = Bytes::copy_from_slice(&buffer[..bytes_read]);
             sender
                 .blocking_send(Ok(chunk))
-                .expect("Failed to send chunk");
+                .expect(format!("{}", "Failed to send chunk".red()).as_str());
 
-            remaining_bytes -= bytes_read as u64;
+            remaining_bytes += bytes_read as u64;
+            pb.inc(8192)
         }
+        let text = format!("{} Download finish", ip.green());
+        println!("{}", text);
+        pb.finish_and_clear();
 
         Ok::<_, io::Error>(())
     });
 
     tokio::spawn(async move {
         if let Err(e) = download_task.await {
-            eprintln!("Error occurred during file download: {:?}", e);
+            let text = format!(
+                "{} {}",
+                "Error occurred during file download:".red(),
+                e.to_string().red()
+            );
+            println!("{}", text);
         }
     });
 
