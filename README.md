@@ -25,3 +25,7 @@ curl https://airnc.zhazhazhu.me/install.sh | bash
 ```shell
 airnc ./tmp/hello.txt
 ```
+
+<div align="center">
+  <img src="./docs/example.gif" alt="Blazing fast!">
+</div>
