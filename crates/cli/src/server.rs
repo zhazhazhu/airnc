@@ -1,6 +1,7 @@
 use crate::{
     cli::Cli,
     utils::{create_qrcode, find_available_port, get_local_ip},
+    ws::{connect_and_handle_messages, Service},
 };
 use actix_web::{
     http::header::ContentLength,
@@ -17,14 +18,13 @@ use std::{
     path::PathBuf,
     process::exit,
 };
-use tokio::sync::mpsc;
+use tokio::{sync::mpsc, task};
 
 #[derive(Clone)]
 struct AppState {
     file_path: PathBuf,
 }
 
-#[tokio::main]
 pub async fn run_server(cli: Cli) -> Result<(), std::io::Error> {
     let file_path = PathBuf::from(cli.path.unwrap());
     let file_name = file_path.file_name().unwrap().to_str().unwrap().to_string();
@@ -34,18 +34,22 @@ pub async fn run_server(cli: Cli) -> Result<(), std::io::Error> {
     }
 
     let state = AppState { file_path };
-
     let local_ip = get_local_ip().unwrap();
-
     let port = find_available_port();
-
-    let addr = SocketAddr::new(local_ip, port);
-
+    let addr: SocketAddr = SocketAddr::new(local_ip, port);
     let download_url = format!("http://{}/{}", addr.to_string(), &file_name);
 
     create_qrcode(&download_url).unwrap();
-
     println!("\nDownload URL: {}", download_url);
+
+    let service = Service {
+        ip: local_ip.to_string(),
+        link: download_url.to_string(),
+    };
+
+    let ws_task = task::spawn(async {
+        connect_and_handle_messages(service).await;
+    });
 
     HttpServer::new(move || {
         App::new()
@@ -54,7 +58,11 @@ pub async fn run_server(cli: Cli) -> Result<(), std::io::Error> {
     })
     .bind(addr)?
     .run()
-    .await
+    .await?;
+
+    ws_task.await?;
+
+    Ok(())
 }
 
 async fn download_handler(

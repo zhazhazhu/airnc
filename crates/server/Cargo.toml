@@ -1,0 +1,23 @@
+[package]
+name = "airnc-server"
+version = "0.0.1"
+edition = "2021"
+description = "A LAN transmission tool"
+authors = ["fangyuan.leslie@gmail.com"]
+keywords = ["cli", "file-transmission", "LAN"]
+license = "MIT"
+homepage = "https://github.com/zhazhazhu/airnc/tree/master/crates/server"
+repository = "https://github.com/zhazhazhu/airnc/tree/master/crates/server"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.35.1", features = ["full"] }
+actix-web = "4"
+actix-web-actors = "4.2.0"
+actix = "0.13.1"
+mysql = "24"
+dotenvy = "0.15.7"
+serde = "1.0.195"
+serde_json = "1.0.111"
+derive_more = "0.99.17"
