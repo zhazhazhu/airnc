@@ -3,7 +3,7 @@ mod routes;
 
 use actix_cors::Cors;
 use actix_web::{http, web, App, HttpServer};
-use routes::{clients, clients_by_ip, ws_index};
+use routes::{clients, ws_index};
 use std::env;
 
 #[actix_web::main]
@@ -38,7 +38,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .app_data(shared_data.clone())
             .route("/ws", web::get().to(ws_index))
-            .service(web::scope("/api").service(clients).service(clients_by_ip))
+            .service(web::scope("/api").service(clients))
     })
     .workers(2)
     .bind(("0.0.0.0", 8080))?

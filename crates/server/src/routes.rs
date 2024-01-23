@@ -87,20 +87,17 @@ pub async fn ws_index(
     resp
 }
 
-#[get("/client/{ip}")]
-pub async fn clients(
-    path: web::Path<String>,
-    data: web::Data<mysql::Pool>,
-) -> actix_web::Result<impl Responder> {
-    let ip = path.into_inner();
-    let mut conn = data.get_conn().unwrap();
-    let services = web::block(move || get_service(&mut conn, Some(ip))).await??;
-    Ok(web::Json(services))
+#[derive(Deserialize)]
+pub struct ClientQuery {
+    pub search: Option<String>,
 }
 
 #[get("/client")]
-pub async fn clients_by_ip(data: web::Data<mysql::Pool>) -> actix_web::Result<impl Responder> {
+pub async fn clients(
+    query: web::Query<ClientQuery>,
+    data: web::Data<mysql::Pool>,
+) -> actix_web::Result<impl Responder> {
     let mut conn = data.get_conn().unwrap();
-    let services = web::block(move || get_service(&mut conn, None)).await??;
+    let services = web::block(move || get_service(&mut conn, query.search.clone())).await??;
     Ok(web::Json(services))
 }

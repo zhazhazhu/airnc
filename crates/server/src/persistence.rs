@@ -31,12 +31,12 @@ pub fn insert_service(
     websocket_key: String,
 ) -> mysql::error::Result<u64> {
     let insert_query =
-        format!("INSERT INTO {SERVICES_TABLE_NAME} (ip, links, websocket_key) VALUES (:ip, :links, :websocket_key)");
+        format!("INSERT INTO {SERVICES_TABLE_NAME} (ip, link, websocket_key) VALUES (:ip, :link, :websocket_key)");
     conn.exec_drop(
         insert_query,
         params! {
             "ip"=> ip,
-            "links" => link,
+            "link" => link,
             "websocket_key" => websocket_key
         },
     )
@@ -49,7 +49,7 @@ pub fn insert_service(
 //     websocket_key: String,
 // ) -> mysql::error::Result<u64> {
 //     let update_query = format!(
-//         "UPDATE {SERVICES_TABLE_NAME} SET links = CONCAT(links, ',{}') WHERE websocket_key = :websocket_key",
+//         "UPDATE {SERVICES_TABLE_NAME} SET link = CONCAT(link, ',{}') WHERE websocket_key = :websocket_key",
 //         link
 //     );
 //     conn.exec_drop(
@@ -66,23 +66,23 @@ pub struct Service {
     pub id: String,
     pub ip: String,
     pub websocket_key: String,
-    pub links: String,
+    pub link: String,
 }
 
 pub fn get_service(
     conn: &mut mysql::PooledConn,
-    ip: Option<String>,
+    search: Option<String>,
 ) -> Result<Vec<Service>, PersistenceError> {
-    let query_fn = |(id, ip, websocket_key, links)| Service {
+    let query_fn = |(id, ip, link, websocket_key)| Service {
         id,
         ip,
+        link,
         websocket_key,
-        links,
     };
 
-    match ip {
-        Some(ip) => {
-            let select_query = format!("SELECT * FROM {SERVICES_TABLE_NAME} WHERE ip = '{ip}'");
+    match search {
+        Some(search) => {
+            let select_query = format!("SELECT * FROM {SERVICES_TABLE_NAME} WHERE CONCAT(id, ip, link, websocket_key) LIKE '%{search}%'");
             let data = conn.query_map(select_query, query_fn)?;
             Ok(data)
         }
