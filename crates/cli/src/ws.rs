@@ -13,7 +13,7 @@ pub struct Service {
 }
 
 pub async fn connect_and_handle_messages(service: Service) {
-    match WebSocket::connect("ws://127.0.0.1:8080/ws").await {
+    match WebSocket::connect("ws://120.55.189.199:8080/ws").await {
         Ok(mut ws) => {
             let value = serde_json::to_string(&service).unwrap();
             ws.send_text(value).await.unwrap();
