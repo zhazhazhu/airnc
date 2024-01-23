@@ -1,7 +1,8 @@
 mod persistence;
 mod routes;
 
-use actix_web::{web, App, HttpServer};
+use actix_cors::Cors;
+use actix_web::{http, web, App, HttpServer};
 use routes::{clients, clients_by_ip, ws_index};
 use std::env;
 
@@ -23,7 +24,18 @@ async fn main() -> std::io::Result<()> {
     println!("hello airnc server");
 
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allowed_origin_fn(|origin, req_head| {
+                println!("{:?}", origin);
+                origin == req_head.headers().get("origin").unwrap()
+            })
+            .allowed_methods(vec!["GET", "POST"])
+            .allowed_headers(vec![http::header::AUTHORIZATION, http::header::ACCEPT])
+            .allowed_header(http::header::CONTENT_TYPE)
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .app_data(shared_data.clone())
             .route("/ws", web::get().to(ws_index))
             .service(web::scope("/api").service(clients).service(clients_by_ip))
