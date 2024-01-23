@@ -20,6 +20,8 @@ async fn main() -> std::io::Result<()> {
     let pool = mysql::Pool::new(builder).unwrap();
     let shared_data = web::Data::new(pool);
 
+    println!("hello airnc server");
+
     HttpServer::new(move || {
         App::new()
             .app_data(shared_data.clone())
