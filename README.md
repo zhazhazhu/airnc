@@ -1,6 +1,6 @@
 # airnc
 
-A LAN transmission tool
+一个局域网传输工具
 
 # Install
 
@@ -20,12 +20,12 @@ First ensure that curl and unzip are already installed on you operating system. 
 curl https://airnc.zhazhazhu.me/install.sh | bash
 ```
 
-### `begin`
+### Begin
 
 ```shell
 airnc ./README.md
 ```
 
-<div align="center">
-  <img src="./docs/example.gif" alt="Blazing fast!">
-</div>
+### Example(演示)
+
+https://github.com/zhazhazhu/airnc/assets/80683658/97f958e0-63df-4f5a-a481-9bb2b0eca622
