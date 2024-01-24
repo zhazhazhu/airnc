@@ -53,7 +53,7 @@ jobs:
 
       - name: Install musl(linux)
         if: matrix.build == 'linux'
-        run: sudo apt-get install -y musl-tools
+        run: sudo apt-get install -y musl-tools libssl-dev
 
       - name: Build binary
         run: cargo build --verbose --release --target ${{ matrix.target }} --package airnc

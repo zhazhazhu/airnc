@@ -52,11 +52,11 @@ pub async fn run_server(cli: Cli) -> Result<(), std::io::Error> {
     };
 
     let service_disable = cli.config.service_disable.clone();
-    let ws_task = task::spawn(async move {
-        if !service_disable {
+    if !service_disable {
+        task::spawn(async move {
             connect_and_handle_messages(service).await;
-        }
-    });
+        });
+    }
 
     HttpServer::new(move || {
         App::new()
@@ -66,8 +66,6 @@ pub async fn run_server(cli: Cli) -> Result<(), std::io::Error> {
     .bind(addr)?
     .run()
     .await?;
-
-    ws_task.await?;
 
     Ok(())
 }
