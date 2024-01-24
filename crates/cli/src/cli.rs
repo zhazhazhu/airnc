@@ -8,6 +8,23 @@ use colored::*;
 pub struct Cli {
     ///  Sets a custom file path
     pub path: Option<String>,
+    #[clap(flatten)]
+    pub config: AirncConfig,
+}
+
+#[derive(clap::Parser, Debug)]
+pub struct AirncConfig {
+    /// Whether to disable the link remote service
+    #[clap(long = "service-disable", global = true)]
+    pub service_disable: bool,
+}
+
+impl Default for AirncConfig {
+    fn default() -> Self {
+        Self {
+            service_disable: false,
+        }
+    }
 }
 
 pub fn run_cli() -> Option<Cli> {

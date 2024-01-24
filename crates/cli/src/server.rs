@@ -40,15 +40,22 @@ pub async fn run_server(cli: Cli) -> Result<(), std::io::Error> {
     let download_url = format!("http://{}/{}", addr.to_string(), &file_name);
 
     create_qrcode(&download_url).unwrap();
-    println!("\nDownload URL: {}", download_url);
+
+    println!("");
+    println!("➤   Home:     {}", "https://air.zhazhazhu.me".green());
+    println!("➤   Download: {}", download_url.green());
+    println!("");
 
     let service = Service {
         ip: local_ip.to_string(),
         link: download_url.to_string(),
     };
 
-    let ws_task = task::spawn(async {
-        connect_and_handle_messages(service).await;
+    let service_disable = cli.config.service_disable.clone();
+    let ws_task = task::spawn(async move {
+        if !service_disable {
+            connect_and_handle_messages(service).await;
+        }
     });
 
     HttpServer::new(move || {
@@ -73,14 +80,14 @@ async fn download_handler(
     let mut ip = String::new();
     if let Some(val) = user_addr {
         ip = val.ip().to_string();
-        println!("User: {} request was initiated.", ip.to_string().green());
+        println!("User: {} Request was initiated.", ip.to_string().green());
     };
     let mut file = File::open(&data.file_path)?;
     let file_size = file.metadata()?.len();
     let (sender, mut receiver) = mpsc::channel::<Result<Bytes, io::Error>>(32);
 
-    let mut remaining_bytes = 8192;
-    let mut buffer = [0u8; 8192];
+    let mut remaining_bytes = 1024;
+    let mut buffer = [0u8; 1024];
     let pb = ProgressBar::new(file_size);
     let download_task = tokio::task::spawn_blocking(move || {
         while remaining_bytes < file_size {
@@ -88,13 +95,20 @@ async fn download_handler(
             let bytes_read = file.read(&mut buffer[..bytes_to_read])?;
 
             let chunk = Bytes::copy_from_slice(&buffer[..bytes_read]);
-            sender
-                .blocking_send(Ok(chunk))
-                .expect(format!("{}", "Failed to send chunk".red()).as_str());
+            let send = sender.blocking_send(Ok(chunk));
+            if send.is_err() {
+                println!(
+                    "User: {} {}",
+                    ip.to_string().green(),
+                    "Close Download".yellow()
+                );
+                return Err(io::Error::new(io::ErrorKind::Other, "Download closed"));
+            }
 
             remaining_bytes += bytes_read as u64;
-            pb.inc(8192)
+            pb.inc(1024);
         }
+
         let text = format!("{} Download finish", ip.green());
         println!("{}", text);
         pb.finish_and_clear();
@@ -103,13 +117,8 @@ async fn download_handler(
     });
 
     tokio::spawn(async move {
-        if let Err(e) = download_task.await {
-            let text = format!(
-                "{} {}",
-                "Error occurred during file download:".red(),
-                e.to_string().red()
-            );
-            println!("{}", text);
+        if let Err(_) = download_task.await {
+            println!("{}", "Error occurred during file download:".red());
         }
     });
 

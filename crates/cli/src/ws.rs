@@ -30,10 +30,10 @@ pub async fn connect_and_handle_messages(service: Service) {
                                 match msg {
                                     Frame::Text { payload, .. } => {
                                         // 处理接收到的文本消息
-                                        println!("Received text message: {}", payload);
+                                        println!("➤   Received: {}", payload);
                                     }
                                     Frame::Close { .. } => {
-                                        println!("Received close message");
+                                        println!("➤   Received close");
                                         break;
                                     }
                                     _ => {}
