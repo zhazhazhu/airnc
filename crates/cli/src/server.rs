@@ -20,6 +20,8 @@ use std::{
 };
 use tokio::{sync::mpsc, task};
 
+const HOME_URL: &str = "https://air.zhazhazhu.me";
+
 #[derive(Clone)]
 struct AppState {
     file_path: PathBuf,
@@ -46,7 +48,7 @@ pub async fn run_server(cli: Cli) -> Result<(), std::io::Error> {
     create_qrcode(&download_url).unwrap();
 
     println!("");
-    println!("➤   Home:     {}", "https://air.zhazhazhu.me".green());
+    println!("➤   Home:     {}", HOME_URL.green());
     println!("➤   Download: {}", download_url.green());
     println!("");
 

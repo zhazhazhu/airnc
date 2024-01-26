@@ -2,6 +2,8 @@ use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use websockets::{Frame, WebSocket};
 
+const WS_HOST: &str = "ws://120.55.189.199:8080/ws";
+
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Service {
     pub ip: String,
@@ -10,7 +12,7 @@ pub struct Service {
 
 pub async fn connect_and_handle_messages(service: Service) {
     println!("Ws: server connecting...");
-    match WebSocket::connect("ws://120.55.189.199:8080/ws").await {
+    match WebSocket::connect(WS_HOST).await {
         Ok(mut ws) => {
             println!("{}", "Ws: server connect success".green());
             let value = serde_json::to_string(&service).unwrap();
