@@ -17,12 +17,16 @@ pub struct AirncConfig {
     /// Whether to disable the link remote service
     #[clap(long = "service-disable", global = true)]
     pub service_disable: bool,
+    /// Specify a port number
+    #[clap(short, long = "port", global = true)]
+    pub port: Option<u16>,
 }
 
 impl Default for AirncConfig {
     fn default() -> Self {
         Self {
             service_disable: false,
+            port: None,
         }
     }
 }

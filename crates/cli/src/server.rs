@@ -35,7 +35,11 @@ pub async fn run_server(cli: Cli) -> Result<(), std::io::Error> {
 
     let state = AppState { file_path };
     let local_ip = get_local_ip().unwrap();
-    let port = find_available_port();
+    let port = if let Some(port) = cli.config.port {
+        port
+    } else {
+        find_available_port()
+    };
     let addr: SocketAddr = SocketAddr::new(local_ip, port);
     let download_url = format!("http://{}/{}", addr.to_string(), &file_name);
 
