@@ -50,7 +50,7 @@ curl -L "$ARCHIVE_URL" -o "$TEMP_FILE"
 tar -xzvf "$TEMP_FILE" -C "$DOWNLOAD_DIR"
 
 if [ ! -d "$INSTALL_DIR" ]; then
-  mkdir "$INSTALL_DIR"
+  mkdir -p "$INSTALL_DIR"
 fi
 
 mv "$DOWNLOAD_DIR/airnc" "$INSTALL_DIR/airnc"
